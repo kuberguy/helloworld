@@ -1,0 +1,7 @@
+kubectl  run hello_world --image=docker.io/repo_name/helloworld:v1 --port=8080
+
+kubectl expose deployment hello_world --type=LoadBalancer --port 8080 --target_port 80
+
+kubectl get svc
+$POD_NAME=$(kubectl get pods|grep hello_world|awk '{print $1}')
+kubectl port-forward $POD_NAME 8080:8080
