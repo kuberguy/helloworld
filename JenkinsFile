@@ -1,0 +1,34 @@
+pipeline{
+        agent  {
+        dockerfile true
+        docker {
+        image 'openjdk:8-jre-alpine'
+           }
+    }
+        
+       stages{
+          stage('Compile'){
+            steps{
+                  mvn compile
+                  }
+               }
+            stage('Build'){
+                steps{
+                      mvn package
+                      }
+            stage("Push Release/Tag") {
+            steps {
+          withDockerRegistry([credentialsId: "dockerhub-bloxcicd", url: ""]) {
+             sh 'cd $PROJECT && make push IMAGE_VERSION=${TAG_NAME} GITHUB_PAT=${Github_PAT}'
+             sh 'cd $PROJECT && make clean'
+          }
+       }
+       stage("Push merge") {
+          steps {
+          withDockerRegistry([credentialsId: "dockerhub-bloxcicd", url: ""]) {
+             sh 'cd $PROJECT && make push USERNAME="Jenkins" GITHUB_PAT=${Github_PAT}'
+             sh 'cd $PROJECT && make push-latest GITHUB_PAT=${Github_PAT}'
+             sh 'cd $PROJECT && make clean'
+          }
+}
+}
